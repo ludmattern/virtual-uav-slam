@@ -1,6 +1,6 @@
 # UAV 3‑D Scan Simulator
 
-[![CI Status](https://github.com/ludmattern/virtual-uav-slam/workflows/ci.yml/badge.svg)](https://github.com/ludmattern/virtual-uav-slam/actions)
+[![CI](https://github.com/ludmattern/virtual-uav-slam/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/ludmattern/virtual-uav-slam/actions/workflows/ci.yml)
 
 **Virtual drone + real‑time 3‑D room scanning, entirely in simulation.**
 Powered by **Gazebo**, **PX4 SITL**, **ROS 2 Humble**, and **RTAB‑Map**.
