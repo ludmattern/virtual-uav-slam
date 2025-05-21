@@ -72,7 +72,7 @@ Within a few seconds **Gazebo** should open, the drone will lift off, and a live
 
 ## Contributing / Project board
 
-All tasks are tracked in the **[GitHub Project board](https://github.com/users/ludmattern/virtual-uav-slam/1)** (Kanban + sprints).
+All tasks are tracked in the **[GitHub Project board](https://github.com/users/ludmattern/virtual-uav-slam/3)** (Kanban + sprints).
 
 1. Pick an open issue in *Iteration N*.
 2. Create a feature branch (`feature/short-desc`).
