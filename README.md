@@ -11,17 +11,17 @@ Powered by **Gazebo**, **PX4 SITL**, **ROS 2 Humble**, and **RTAB‑Map**.
 
 ```
 ┌──────────────┐   MAVLink   ┌──────────────┐
-│  Gazebo      │ ───────────▶│  PX4  SITL   │
-│  world +     │             └──────┬───────┘
-│  sensors     │                    │ uORB ↔ DDS
+│    Gazebo    │ ───────────▶│   PX4  SITL  │
+│    world +   │             └──────┬───────┘
+│    sensors   │                    │ uORB ↔ DDS
 └──────────────┘     sensor_msgs    ▼
                       /scan, /imu
                   ┌──────────────┐   pointcloud2   ┌────────────┐
-                  │   ROS 2      │ ───────────────▶│  RTAB‑Map  │
-                  │   nodes      │                 └────┬───────┘
+                  │     ROS 2    │ ───────────────▶│  RTAB‑Map  │
+                  │     nodes    │                 └────┬───────┘
                   └──────────────┘                      │ map
                                                      ┌──▼──┐
-                                                     │RViz│
+                                                     │ RViz│
                                                      └─────┘
 ```
 
