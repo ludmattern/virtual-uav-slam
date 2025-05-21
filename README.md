@@ -45,8 +45,8 @@ cd virtual-uav-slam
 # 2. Build the development image (first time only)
 ./dev build
 
-# 3. Launch a ROS 2 shell inside the container
-./dev up
+# 3. Launches Docker + Gazebo + ROS 2 shell
+./dev up        # launches Docker + Gazebo + ROS 2 shell
 
 # 4. In the container, start the full stack
 ros2 launch launch/full_stack.launch.py
