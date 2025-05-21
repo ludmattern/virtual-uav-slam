@@ -1,0 +1,64 @@
+#!/bin/bash
+set -e
+
+# Configuration
+IMAGE_NAME="virtual-uav-slam:dev"
+CONTAINER_NAME="virtual-uav-slam-dev"
+WORKSPACE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+build() {
+	echo "Building Docker image: $IMAGE_NAME"
+	docker build -t $IMAGE_NAME .
+	echo "Build complete!"
+}
+
+up() {
+	echo "Starting development environment..."
+
+	# Check if the image exists
+	if [[ "$(docker images -q $IMAGE_NAME 2>/dev/null)" == "" ]]; then
+		echo "Image not found. Building first..."
+		build
+	fi
+
+	# Run with X11 forwarding for GUI applications (Gazebo, RViz)
+	# Mount the current directory to /workspace in the container
+	docker run -it --rm \
+		--name $CONTAINER_NAME \
+		-e DISPLAY=$DISPLAY \
+		-v /tmp/.X11-unix:/tmp/.X11-unix \
+		-v $WORKSPACE_DIR:/workspace \
+		--network=host \
+		$IMAGE_NAME
+}
+
+exec_cmd() {
+	# Execute a command in the running container
+	if [ "$(docker ps -q -f name=$CONTAINER_NAME)" ]; then
+		docker exec -it $CONTAINER_NAME "$@"
+	else
+		echo "Container is not running. Use './dev up' to start it first."
+		exit 1
+	fi
+}
+
+# Command router
+case "$1" in
+build)
+	build
+	;;
+up)
+	up
+	;;
+exec)
+	shift
+	exec_cmd "$@"
+	;;
+*)
+	echo "Usage: $0 {build|up|exec [command]}"
+	echo "  build - Build the Docker image"
+	echo "  up    - Start the development container"
+	echo "  exec  - Execute a command in the running container"
+	exit 1
+	;;
+esac
