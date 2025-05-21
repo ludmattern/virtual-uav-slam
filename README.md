@@ -80,6 +80,11 @@ All tasks are tracked in the **[GitHub Project board](https://github.com/users/l
 4. Open a PR and link the issue (`Fixes #12`).
 
 ---
+## Repository
+
+Find the project on GitHub: [ludmattern/virtual-uav-slam](https://github.com/ludmattern/virtual-uav-slam)
+
+---
 
 ## License
 
