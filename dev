@@ -21,15 +21,26 @@ up() {
 		build
 	fi
 
+	# Process command line arguments
+	local COMMAND=""
+	if [ "$1" = "-c" ] && [ -n "$2" ]; then
+		COMMAND="source /opt/ros/humble/setup.bash && $2"
+		shift 2
+	else
+		COMMAND="source /opt/ros/humble/setup.bash && exec bash"
+	fi
+
 	# Run with X11 forwarding for GUI applications (Gazebo, RViz)
-	# Mount the current directory to /workspace in the container
+	# Mount the current directory to /work in the container
 	docker run -it --rm \
 		--name $CONTAINER_NAME \
 		-e DISPLAY=$DISPLAY \
 		-v /tmp/.X11-unix:/tmp/.X11-unix \
-		-v $WORKSPACE_DIR:/workspace \
+		-v $WORKSPACE_DIR:/work \
 		--network=host \
-		$IMAGE_NAME
+		--workdir=/work \
+		$IMAGE_NAME \
+		bash -c "$COMMAND"
 }
 
 exec_cmd() {
@@ -48,17 +59,19 @@ build)
 	build
 	;;
 up)
-	up
+	shift
+	up "$@"
 	;;
 exec)
 	shift
 	exec_cmd "$@"
 	;;
 *)
-	echo "Usage: $0 {build|up|exec [command]}"
-	echo "  build - Build the Docker image"
-	echo "  up    - Start the development container"
-	echo "  exec  - Execute a command in the running container"
+	echo "Usage: $0 {build|up [-c command]|exec [command]}"
+	echo "  build            - Build the Docker image"
+	echo "  up               - Start the development container with ROS 2 environment"
+	echo "  up -c \"command\"  - Run a command in the container and exit"
+	echo "  exec [command]   - Execute a command in the running container"
 	exit 1
 	;;
 esac
