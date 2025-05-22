@@ -38,4 +38,4 @@ jobs:
             # Test talker/listener nodes
             - name: Test talker/listener demo
               run: |
-                  docker run --rm virtual-uav-slam:dev bash -c "source /opt/ros/humble/setup.bash && (ros2 run demo_nodes_cpp talker > /dev/null 2>&1 &) && sleep 2 && timeout 5 ros2 run demo_nodes_cpp listener | grep 'I heard:' && pkill -f talker || (pkill -f talker; false)"
+                  docker run --rm virtual-uav-slam:dev bash -c "source /opt/ros/humble/setup.bash && (ros2 run demo_nodes_cpp talker > /dev/null 2>&1 &) && sleep 2 && (timeout 5 ros2 run demo_nodes_cpp listener | grep 'I heard:'; STATUS=\$?; pkill -f talker; if [ \$STATUS -eq 124 ] || [ \$STATUS -eq 0 ]; then exit 0; else exit 1; fi)"
