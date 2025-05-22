@@ -12,37 +12,53 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      # 1. Checkout
+      # 1) Récupérer le code
       - uses: actions/checkout@v4
 
-      # 2. Build Docker image
-      - name: Build Docker image
-        run: |
-          docker build -t virtual-uav-slam:dev .
+      # 2) Se logger sur GHCR
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-      # 3. Smoke-test ROS 2 installation
+      # 3) Pull l’image existante (cache distant)
+      - name: Pull remote cache image
+        run: |
+          docker pull ghcr.io/ludmattern/virtual-uav-slam:dev || true
+
+      # 4) Build + cache-from + push
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          tags: ghcr.io/ludmattern/virtual-uav-slam:dev
+          cache-from: type=registry,ref=ghcr.io/ludmattern/virtual-uav-slam:dev
+          cache-to: type=registry,ref=ghcr.io/ludmattern/virtual-uav-slam:dev,mode=max
+
+      # 5) Test ROS 2 installation
       - name: Test ROS 2 installation
         run: |
-          docker run --rm virtual-uav-slam:dev bash -c \
-            "source /opt/ros/humble/setup.bash && ros2 --help"
+          docker run --rm ghcr.io/ludmattern/virtual-uav-slam:dev \
+            bash -c "source /opt/ros/humble/setup.bash && ros2 --help"
 
-      # 4. Test talker/listener demo
+      # 6) Test talker/listener demo
       - name: Test talker/listener demo
         run: |
-          docker run --rm virtual-uav-slam:dev bash -c '
-            set -euo pipefail
+          docker run --rm ghcr.io/ludmattern/virtual-uav-slam:dev bash -c '
+            set -eo pipefail
             source /opt/ros/humble/setup.bash
 
-            # lancer le talker en arrière-plan
+            # lancer le talker
             ros2 run demo_nodes_cpp talker >/dev/null 2>&1 &
             TALKER_PID=$!
-
-            # laisser le temps à ROS 2 de créer les topics
             sleep 2
 
-            # écouter pendant max 5 s (timeout 124 si expiration)
+            # écouter pendant max 5 s
             timeout 5 bash -c "ros2 run demo_nodes_cpp listener | grep -m1 \"I heard:\""
 
-            # arrêter proprement le talker
+            # arrêter le talker
             kill $TALKER_PID
           '
