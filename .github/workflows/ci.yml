@@ -12,10 +12,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      # 1) Récupérer le code
       - uses: actions/checkout@v4
 
-      # 2) Se logger sur GHCR
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v2
         with:
@@ -23,12 +21,18 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # 3) Pull l’image existante (cache distant)
-      - name: Pull remote cache image
-        run: |
-          docker pull ghcr.io/ludmattern/virtual-uav-slam:dev || true
+      # ← Nouveau : QEMU + Buildx driver docker-container
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
 
-      # 4) Build + cache-from + push
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+        with:
+          driver: docker-container
+
+      - name: Pull remote cache image
+        run: docker pull ghcr.io/ludmattern/virtual-uav-slam:dev 2>/dev/null || true
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
         with:
@@ -36,7 +40,7 @@ jobs:
           push: true
           tags: ghcr.io/ludmattern/virtual-uav-slam:dev
           cache-from: type=registry,ref=ghcr.io/ludmattern/virtual-uav-slam:dev
-          cache-to: type=registry,ref=ghcr.io/ludmattern/virtual-uav-slam:dev,mode=max
+          cache-to:   type=registry,ref=ghcr.io/ludmattern/virtual-uav-slam:dev,mode=max
 
       # 5) Test ROS 2 installation
       - name: Test ROS 2 installation
