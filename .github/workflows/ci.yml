@@ -64,4 +64,6 @@ jobs:
             - name: Test dev script
               run: |
                   chmod +x ./dev
+                  # Tag the image locally with the name expected by the dev script
+                  docker tag ghcr.io/ludmattern/virtual-uav-slam:dev virtual-uav-slam:dev
                   ./dev up -c "ros2 --help"

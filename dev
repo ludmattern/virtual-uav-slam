@@ -15,10 +15,16 @@ build() {
 up() {
 	echo "Starting development environment..."
 
-	# Check if the image exists
+	# Check if the image exists locally
 	if [[ "$(docker images -q $IMAGE_NAME 2>/dev/null)" == "" ]]; then
-		echo "Image not found. Building first..."
-		build
+		# Try to pull from GitHub Container Registry first
+		if docker pull ghcr.io/ludmattern/virtual-uav-slam:dev 2>/dev/null; then
+			echo "Pulled image from GitHub Container Registry"
+			docker tag ghcr.io/ludmattern/virtual-uav-slam:dev $IMAGE_NAME
+		else
+			echo "Image not found locally or in registry. Building first..."
+			build
+		fi
 	fi
 
 	# Process command line arguments
@@ -53,6 +59,17 @@ exec_cmd() {
 	fi
 }
 
+down() {
+	# Stop the running container
+	if [ "$(docker ps -q -f name=$CONTAINER_NAME)" ]; then
+		echo "Stopping container: $CONTAINER_NAME"
+		docker stop $CONTAINER_NAME
+		echo "Container stopped."
+	else
+		echo "Container is not running."
+	fi
+}
+
 # Command router
 case "$1" in
 build)
@@ -66,12 +83,16 @@ exec)
 	shift
 	exec_cmd "$@"
 	;;
+down)
+	down
+	;;
 *)
-	echo "Usage: $0 {build|up [-c command]|exec [command]}"
+	echo "Usage: $0 {build|up [-c command]|exec [command]|down}"
 	echo "  build            - Build the Docker image"
 	echo "  up               - Start the development container with ROS 2 environment"
 	echo "  up -c \"command\"  - Run a command in the container and exit"
 	echo "  exec [command]   - Execute a command in the running container"
+	echo "  down             - Stop the running container"
 	exit 1
 	;;
 esac
