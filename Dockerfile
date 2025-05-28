@@ -29,7 +29,9 @@ RUN mkdir -p /usr/share/keyrings \
 RUN rm -rf /var/lib/apt/lists/* \
  && apt-get update \
  && apt-get install -y --no-install-recommends \
-      ros-humble-ros-base python3-colcon-common-extensions python3-rosdep \
+      ros-humble-ros-base \
+	  ros-humble-demo-nodes-cpp \
+	  python3-colcon-common-extensions python3-rosdep \
  && rm -rf /var/lib/apt/lists/* \
  && rosdep init \
  && rosdep update
