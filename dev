@@ -36,9 +36,18 @@ up() {
 		COMMAND="source /opt/ros/humble/setup.bash && exec bash"
 	fi
 
+	# decide TTY flags
+	if [[ "$COMMAND" == *"exec bash"* ]]; then
+		# interactive shell
+		TTY_FLAGS="-it"
+	else
+		# single command in CI / scripts
+		TTY_FLAGS="-i"
+	fi
+
 	# Run with X11 forwarding for GUI applications (Gazebo, RViz)
 	# Mount the current directory to /work in the container
-	docker run -it --rm \
+	docker run $TTY_FLAGS --rm \
 		--name $CONTAINER_NAME \
 		-e DISPLAY=$DISPLAY \
 		-v /tmp/.X11-unix:/tmp/.X11-unix \
