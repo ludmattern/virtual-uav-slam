@@ -58,11 +58,18 @@ jobs:
           docker run --rm ghcr.io/ludmattern/virtual-uav-slam:dev bash -c '
             set -eo pipefail
             source /opt/ros/humble/setup.bash
+            # start talker
             ros2 run demo_nodes_cpp talker >/dev/null 2>&1 &
             TALKER_PID=$!
             sleep 2
-            timeout 5 bash -c "ros2 run demo_nodes_cpp listener | grep -m1 \"I heard:\""
-            kill $TALKER_PID
+            # run listener with timeout, but capture its exit code
+            if timeout 5 bash -c "ros2 run demo_nodes_cpp listener | grep -m1 \"I heard:\""; then
+              kill $TALKER_PID
+              exit 0
+            else
+              kill $TALKER_PID
+              exit 1
+            fi
           '
 
       # 8) Validate the ./dev helper
