@@ -48,10 +48,13 @@ cd virtual-uav-slam
 # 3. Launches Docker + Gazebo + ROS 2 shell
 ./dev up        # launches Docker + Gazebo + ROS 2 shell
 
-# 4. Execute commands in a running container (optional)
+# 4. Run a command in the container without starting an interactive shell
+./dev up -c "ros2 topic list"  # runs a command and exits
+
+# 5. Execute commands in a running container (optional)
 ./dev exec ros2 topic list  # run ROS 2 commands in the container
 
-# 5. In the container, start the full stack
+# 6. In the container, start the full stack
 ros2 launch launch/full_stack.launch.py
 ```
 

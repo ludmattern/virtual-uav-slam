@@ -15,21 +15,47 @@ build() {
 up() {
 	echo "Starting development environment..."
 
-	# Check if the image exists
+	# Check if the image exists locally
 	if [[ "$(docker images -q $IMAGE_NAME 2>/dev/null)" == "" ]]; then
-		echo "Image not found. Building first..."
-		build
+		# Try to pull from GitHub Container Registry first
+		if docker pull ghcr.io/ludmattern/virtual-uav-slam:dev 2>/dev/null; then
+			echo "Pulled image from GitHub Container Registry"
+			docker tag ghcr.io/ludmattern/virtual-uav-slam:dev $IMAGE_NAME
+		else
+			echo "Image not found locally or in registry. Building first..."
+			build
+		fi
+	fi
+
+	# Process command line arguments
+	local COMMAND=""
+	if [ "$1" = "-c" ] && [ -n "$2" ]; then
+		COMMAND="source /opt/ros/humble/setup.bash && $2"
+		shift 2
+	else
+		COMMAND="source /opt/ros/humble/setup.bash && exec bash"
+	fi
+
+	# decide TTY flags
+	if [[ "$COMMAND" == *"exec bash"* ]]; then
+		# interactive shell
+		TTY_FLAGS="-it"
+	else
+		# single command in CI / scripts
+		TTY_FLAGS="-i"
 	fi
 
 	# Run with X11 forwarding for GUI applications (Gazebo, RViz)
-	# Mount the current directory to /workspace in the container
-	docker run -it --rm \
+	# Mount the current directory to /work in the container
+	docker run $TTY_FLAGS --rm \
 		--name $CONTAINER_NAME \
 		-e DISPLAY=$DISPLAY \
 		-v /tmp/.X11-unix:/tmp/.X11-unix \
-		-v $WORKSPACE_DIR:/workspace \
+		-v $WORKSPACE_DIR:/work \
 		--network=host \
-		$IMAGE_NAME
+		--workdir=/work \
+		$IMAGE_NAME \
+		bash -c "$COMMAND"
 }
 
 exec_cmd() {
@@ -42,23 +68,40 @@ exec_cmd() {
 	fi
 }
 
+down() {
+	# Stop the running container
+	if [ "$(docker ps -q -f name=$CONTAINER_NAME)" ]; then
+		echo "Stopping container: $CONTAINER_NAME"
+		docker stop $CONTAINER_NAME
+		echo "Container stopped."
+	else
+		echo "Container is not running."
+	fi
+}
+
 # Command router
 case "$1" in
 build)
 	build
 	;;
 up)
-	up
+	shift
+	up "$@"
 	;;
 exec)
 	shift
 	exec_cmd "$@"
 	;;
+down)
+	down
+	;;
 *)
-	echo "Usage: $0 {build|up|exec [command]}"
-	echo "  build - Build the Docker image"
-	echo "  up    - Start the development container"
-	echo "  exec  - Execute a command in the running container"
+	echo "Usage: $0 {build|up [-c command]|exec [command]|down}"
+	echo "  build            - Build the Docker image"
+	echo "  up               - Start the development container with ROS 2 environment"
+	echo "  up -c \"command\"  - Run a command in the container and exit"
+	echo "  exec [command]   - Execute a command in the running container"
+	echo "  down             - Stop the running container"
 	exit 1
 	;;
 esac
