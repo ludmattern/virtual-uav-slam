@@ -2,11 +2,9 @@ name: CI
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   pull_request:
-    branches:
-      - main
+    branches: [main]
   workflow_dispatch:
 
 jobs:
@@ -15,46 +13,45 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # 1) Log in to GitHub Container Registry
-      - name: Log in to GHCR
+      # 1) Log in to GHCR
+      - name: Log in to GitHub Container Registry
         uses: docker/login-action@v2
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # 2) Prepare QEMU and Buildx
+      # 2) Prepare QEMU & buildx
       - uses: docker/setup-qemu-action@v2
       - uses: docker/setup-buildx-action@v2
         with:
           driver: docker-container
 
-      # 3) Pull cache image (no-op if missing)
+      # 3) Pull previous cache image (if any)
       - name: Pull cache image
         run: docker pull ghcr.io/ludmattern/virtual-uav-slam:dev-cache || true
 
-      # 4) Build & push new image
-      - name: Build & push
+      # 4) Build & push the dev image
+      - name: Build & push dev image
         uses: docker/build-push-action@v4
         with:
           context: .
           push: true
-          tags: |
-            ghcr.io/ludmattern/virtual-uav-slam:dev
+          tags: ghcr.io/ludmattern/virtual-uav-slam:dev
           cache-from: type=registry,ref=ghcr.io/ludmattern/virtual-uav-slam:dev-cache
           cache-to: type=registry,ref=ghcr.io/ludmattern/virtual-uav-slam:dev-cache,mode=max
 
-      # 5) Tag image for the dev script
-      - name: Tag for dev script
+      # 5) Tag for local ./dev script
+      - name: Tag image for dev script
         run: docker tag ghcr.io/ludmattern/virtual-uav-slam:dev virtual-uav-slam:dev
 
-      # 6) Basic ROS 2 installation test
+      # 6) Smoke test: ROS 2 help
       - name: Test ROS 2 installation
         run: |
           docker run --rm ghcr.io/ludmattern/virtual-uav-slam:dev \
             bash -c "source /opt/ros/humble/setup.bash && ros2 --help"
 
-      # 7) Talker/listener demo test
+      # 7) Demo test: talker & listener
       - name: Test talker/listener demo
         run: |
           docker run --rm ghcr.io/ludmattern/virtual-uav-slam:dev bash -c '
@@ -67,8 +64,8 @@ jobs:
             kill $TALKER_PID
           '
 
-      # 8) Test the ./dev helper script
-      - name: Test dev script
+      # 8) Validate the ./dev helper
+      - name: Test dev helper script
         run: |
           chmod +x ./dev
           docker tag ghcr.io/ludmattern/virtual-uav-slam:dev virtual-uav-slam:dev
