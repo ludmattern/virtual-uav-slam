@@ -1,30 +1,17 @@
 FROM ubuntu:22.04
 
-# Prevent interactive prompts during build
-ENV DEBIAN_FRONTEND=noninteractive
+ENV DEBIAN_FRONTEND=noninteractive \
+    LANG=en_US.UTF-8 \
+    LC_ALL=en_US.UTF-8
 
-# Set up locale
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends --fix-missing locales && \
-    locale-gen en_US en_US.UTF-8 && \
-    update-locale LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8 && \
-    rm -rf /var/lib/apt/lists/*
-ENV LANG=en_US.UTF-8
-ENV LC_ALL=en_US.UTF-8
-
-# Install basic tools (all in one layer to reduce image size)
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends --fix-missing \
-    ca-certificates \
-    curl \
-    gnupg2 \
-    lsb-release \
-    git \
-    vim \
-    sudo \
-    wget \
-    bash-completion && \
-    rm -rf /var/lib/apt/lists/*
+RUN rm -rf /var/lib/apt/lists/* \
+ && apt-get update \
+ && apt-get install -y --no-install-recommends \
+       locales ca-certificates curl gnupg2 lsb-release \
+       git vim sudo wget bash-completion \
+ && locale-gen en_US.UTF-8 \
+ && update-locale LANG=en_US.UTF-8 \
+ && rm -rf /var/lib/apt/lists/*
 
 # Add ROS 2 apt repository
 RUN mkdir -p /usr/share/keyrings && \
