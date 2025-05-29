@@ -9,7 +9,7 @@ Powered by **Gazebo**, **PX4 SITL**, **ROS 2 Humble**, and **RTAB‑Map**.
 
 ## Architecture (high level)
 
-```
+```plaintext
 ┌──────────────┐   MAVLink   ┌──────────────┐
 │    Gazebo    │ ───────────▶│   PX4  SITL  │
 │    world +   │             └──────┬───────┘
@@ -29,9 +29,9 @@ Powered by **Gazebo**, **PX4 SITL**, **ROS 2 Humble**, and **RTAB‑Map**.
 
 ## Prerequisites
 
--   **Docker ≥ 24**
--   **Git**
--   Linux host with **8 GB RAM** minimum (Intel/AMD or Apple Silicon via Colima)
+- **Docker ≥ 24**
+- **Git**
+- Linux host with **8 GB RAM** minimum (Intel/AMD or Apple Silicon via Colima)
 
 ---
 
@@ -82,7 +82,7 @@ If you see the messages being passed between nodes, your ROS 2 environment is wo
 
 ## Project layout
 
-```
+```plaintext
 .
 ├── simulation_env/   # Gazebo worlds, models, PX4 params
 ├── ros_ws/           # ROS 2 Humble workspace (src/, install/)
