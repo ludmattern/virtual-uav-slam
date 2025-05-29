@@ -5,10 +5,27 @@ set -e
 IMAGE_NAME="virtual-uav-slam:dev"
 CONTAINER_NAME="virtual-uav-slam-dev"
 WORKSPACE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+BUILD_JOBS=$(nproc)
+BUILD_ARGS=""
+QUIET=0
 
 build() {
 	echo "Building Docker image: $IMAGE_NAME"
-	docker build -t $IMAGE_NAME .
+
+	# Allow adding custom build arguments
+	if [ -n "$BUILD_ARGS" ]; then
+		BUILD_CMD="docker build -t $IMAGE_NAME $BUILD_ARGS ."
+	else
+		BUILD_CMD="docker build -t $IMAGE_NAME ."
+	fi
+
+	# Execute build with progress indication
+	if [ $QUIET -eq 1 ]; then
+		eval "$BUILD_CMD" >/dev/null
+	else
+		eval "$BUILD_CMD"
+	fi
+
 	echo "Build complete!"
 }
 
@@ -29,33 +46,67 @@ up() {
 
 	# Process command line arguments
 	local COMMAND=""
-	if [ "$1" = "-c" ] && [ -n "$2" ]; then
-		COMMAND="source /opt/ros/humble/setup.bash && $2"
-		shift 2
-	else
+	local GPU_SUPPORT=""
+
+	# Parse special flags
+	while [ "$#" -gt 0 ]; do
+		case "$1" in
+		--gpu)
+			echo "Enabling GPU support for simulation"
+			GPU_SUPPORT="--gpus all"
+			shift
+			;;
+		-c)
+			if [ -n "$2" ]; then
+				COMMAND="source /opt/ros/humble/setup.bash && $2"
+				shift 2
+			else
+				echo "Error: -c requires a command"
+				exit 1
+			fi
+			;;
+		*)
+			break
+			;;
+		esac
+	done
+
+	# If no command was specified, use interactive bash
+	if [ -z "$COMMAND" ]; then
 		COMMAND="source /opt/ros/humble/setup.bash && exec bash"
 	fi
 
-	# decide TTY flags
+	# Decide TTY flags
 	if [[ "$COMMAND" == *"exec bash"* ]]; then
-		# interactive shell
+		# Interactive shell
 		TTY_FLAGS="-it"
 	else
-		# single command in CI / scripts
+		# Single command in CI / scripts
 		TTY_FLAGS="-i"
 	fi
 
 	# Run with X11 forwarding for GUI applications (Gazebo, RViz)
 	# Mount the current directory to /work in the container
+	# Add cache mount for faster builds
 	docker run $TTY_FLAGS --rm \
 		--name $CONTAINER_NAME \
 		-e DISPLAY=$DISPLAY \
 		-v /tmp/.X11-unix:/tmp/.X11-unix \
 		-v $WORKSPACE_DIR:/work \
+		-v $WORKSPACE_DIR/.ccache:/work/.ccache \
+		-v $WORKSPACE_DIR/.vscode-server:/home/ros/.vscode-server \
 		--network=host \
 		--workdir=/work \
+		$GPU_SUPPORT \
+		-e BUILD_JOBS=$BUILD_JOBS \
 		$IMAGE_NAME \
 		bash -c "$COMMAND"
+
+	exit_code=$?
+	if [ $exit_code -ne 0 ]; then
+		echo "Command failed with exit code $exit_code"
+		exit $exit_code
+	fi
 }
 
 exec_cmd() {
@@ -79,9 +130,53 @@ down() {
 	fi
 }
 
+# PX4 helper functions
+px4_clone() {
+	echo "Cloning PX4-Autopilot repository..."
+	up -c "setup-px4.sh clone"
+}
+
+px4_build() {
+	echo "Building PX4 SITL (jobs: $BUILD_JOBS)..."
+	up -c "setup-px4.sh build -j $BUILD_JOBS"
+}
+
+px4_run() {
+	echo "Running PX4 SITL with Gazebo..."
+	up --gpu -c "setup-px4.sh run"
+}
+
+px4_sim() {
+	echo "Setting up complete PX4 SITL environment..."
+	px4_clone
+	px4_build
+	px4_run
+}
+
 # Command router
 case "$1" in
 build)
+	shift
+	while [ "$#" -gt 0 ]; do
+		case "$1" in
+		-q | --quiet)
+			QUIET=1
+			shift
+			;;
+		-j | --jobs)
+			BUILD_JOBS="$2"
+			shift 2
+			;;
+		--build-arg)
+			BUILD_ARGS="$BUILD_ARGS --build-arg $2"
+			shift 2
+			;;
+		*)
+			echo "Unknown build option: $1"
+			exit 1
+			;;
+		esac
+	done
 	build
 	;;
 up)
@@ -95,13 +190,51 @@ exec)
 down)
 	down
 	;;
+px4)
+	shift
+	case "$1" in
+	clone)
+		px4_clone
+		;;
+	build)
+		px4_build
+		;;
+	run)
+		px4_run
+		;;
+	full | sim)
+		px4_sim
+		;;
+	*)
+		echo "Unknown PX4 command: $1"
+		echo "Usage: $0 px4 {clone|build|run|sim}"
+		exit 1
+		;;
+	esac
+	;;
 *)
-	echo "Usage: $0 {build|up [-c command]|exec [command]|down}"
-	echo "  build            - Build the Docker image"
-	echo "  up               - Start the development container with ROS 2 environment"
-	echo "  up -c \"command\"  - Run a command in the container and exit"
-	echo "  exec [command]   - Execute a command in the running container"
-	echo "  down             - Stop the running container"
+	echo "Virtual UAV SLAM - Development Helper"
+	echo ""
+	echo "Usage: $0 COMMAND [OPTIONS]"
+	echo ""
+	echo "Commands:"
+	echo "  build            Build the Docker image"
+	echo "    -q, --quiet      Build quietly"
+	echo "    -j, --jobs N     Set parallel build jobs"
+	echo "    --build-arg VAL  Add Docker build argument"
+	echo ""
+	echo "  up               Start container with ROS 2 environment"
+	echo "    -c \"command\"    Run a command in container and exit"
+	echo "    --gpu           Enable GPU support for simulation"
+	echo ""
+	echo "  exec [command]   Execute a command in running container"
+	echo "  down             Stop the running container"
+	echo ""
+	echo "  px4              PX4 SITL management commands"
+	echo "    clone           Clone PX4-Autopilot repository"
+	echo "    build           Build PX4 SITL"
+	echo "    run             Run PX4 SITL with Gazebo"
+	echo "    sim             Full setup (clone+build+run)"
 	exit 1
 	;;
 esac

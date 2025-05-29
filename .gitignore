@@ -1,24 +1,42 @@
-# Prerequisites
+# filepath: /goinfre/lmattern/virtual-uav-slam/.gitignore
+# Build outputs
 *.d
-
-# Compiled Object files
-*.slo
-*.lo
 *.o
 *.obj
-
-# Precompiled Headers
-*.gch
-*.pch
-
-# Compiled Dynamic libraries
 *.so
 *.dylib
 *.dll
+*.a
+*.lib
 
-# Fortran module files
-*.mod
-*.smod
+# PX4-specific
+PX4-Autopilot/
+build*/
+*.px4
+
+# ccache directory
+.ccache/
+
+# VSCode
+.vscode/
+.vscode-server/
+
+# ROS
+install/
+build/
+log/
+.catkin_workspace
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+build/
+develop-eggs/
 
 # Compiled Static libraries
 *.lai

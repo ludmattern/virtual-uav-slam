@@ -29,9 +29,9 @@ Powered by **Gazebo**, **PX4 SITL**, **ROS 2 Humble**, and **RTAB‑Map**.
 
 ## Prerequisites
 
--   **Docker ≥ 24**
--   **Git**
--   Linux host with **8 GB RAM** minimum (Intel/AMD or Apple Silicon via Colima)
+- **Docker ≥ 24**
+- **Git**
+- Linux host with **8 GB RAM** minimum (Intel/AMD or Apple Silicon via Colima)
 
 ---
 
@@ -45,17 +45,30 @@ cd virtual-uav-slam
 # 2. Build the development image (first time only)
 ./dev build
 
-# 3. Launches Docker + Gazebo + ROS 2 shell
-./dev up        # launches Docker + Gazebo + ROS 2 shell
+# 3. Setup PX4 SITL environment (one simple command)
+./dev px4 sim    # Clones, builds, and runs PX4 with Gazebo
 
-# 4. Run a command in the container without starting an interactive shell
+# Alternative approach: Step-by-step setup
+./dev px4 clone  # Clone PX4-Autopilot repository
+./dev px4 build  # Build PX4 SITL target
+./dev px4 run    # Run PX4 SITL with Gazebo
+
+# 4. Use the shell inside the container
+./dev up         # launches Docker + ROS 2 shell
+
+# 5. Run a command in the container without starting an interactive shell
 ./dev up -c "ros2 topic list"  # runs a command and exits
 
-# 5. Execute commands in a running container (optional)
+# 6. Execute commands in a running container (optional)
 ./dev exec ros2 topic list  # run ROS 2 commands in the container
 
-# 6. In the container, start the full stack
+# 7. In the container, start the full stack
 ros2 launch launch/full_stack.launch.py
+
+# Using Makefile (alternative for build automation)
+make px4-full    # Clone, build and run PX4 SITL
+make build       # Build Docker image
+make run         # Run development environment
 ```
 
 Within a few seconds **Gazebo** should open, the drone will lift off, and a live 3‑D point‑cloud will appear in **RViz**.
