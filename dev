@@ -16,7 +16,7 @@ up() {
 	echo "Starting development environment..."
 
 	# Enable X11 forwarding on host
-    xhost +local:docker >/dev/null 2>&1 || true
+	xhost +local:docker >/dev/null 2>&1 || true
 
 	# Check if the image exists locally
 	if [[ "$(docker images -q $IMAGE_NAME 2>/dev/null)" == "" ]]; then
@@ -55,6 +55,8 @@ up() {
 		-e DISPLAY=$DISPLAY \
 		-v /tmp/.X11-unix:/tmp/.X11-unix \
 		-v $WORKSPACE_DIR:/work \
+		--device=/dev/dri:/dev/dri \
+		--group-add video \
 		--network=host \
 		--workdir=/work \
 		$IMAGE_NAME \
