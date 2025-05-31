@@ -15,6 +15,9 @@ build() {
 up() {
 	echo "Starting development environment..."
 
+	# Enable X11 forwarding on host
+    xhost +local:docker >/dev/null 2>&1 || true
+
 	# Check if the image exists locally
 	if [[ "$(docker images -q $IMAGE_NAME 2>/dev/null)" == "" ]]; then
 		# Try to pull from GitHub Container Registry first

@@ -36,6 +36,32 @@ RUN rm -rf /var/lib/apt/lists/* \
  && rosdep init \
  && rosdep update
 
+# PX4 SITL dependencies
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    cmake \
+    python3-dev \
+    python3-pip \
+    git \
+    wget \
+    lsb-release \
+    gnupg2 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Gazebo dependencies
+RUN apt-get update && apt-get install -y \
+    gazebo \
+    libgazebo-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install X11 dependencies for GUI
+RUN apt-get update && apt-get install -y \
+    libgl1-mesa-glx \
+    libglu1-mesa \
+    mesa-utils \
+    x11-apps \
+    && rm -rf /var/lib/apt/lists/*
+
 # Create non-root user
 RUN useradd -m ros -s /bin/bash \
  && echo "ros ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/ros
