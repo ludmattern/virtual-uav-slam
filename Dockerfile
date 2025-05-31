@@ -46,12 +46,46 @@ RUN apt-get update && apt-get install -y \
 	wget \
 	lsb-release \
 	gnupg2 \
+	python3-jinja2 \
+	python3-toml \
+	python3-numpy \
+	python3-yaml \
+	python3-packaging \
+	ninja-build \
+	ccache \
+	libopencv-dev \
 	&& rm -rf /var/lib/apt/lists/*
 
+# Install additional PX4 Python dependencies
+RUN pip3 install --no-cache-dir \
+	kconfiglib \
+	jsonschema \
+	future \
+	pymavlink \
+	pyserial \
+	empy \
+	cerberus \
+	pyros-genmsg
+
 # Install Gazebo dependencies
-RUN apt-get update && apt-get install -y \
+RUN sed -i 's|http://archive.ubuntu.com|http://fr.archive.ubuntu.com|g' /etc/apt/sources.list \
+	&& apt-get update && apt-get install -y \
 	gazebo \
 	libgazebo-dev \
+	libprotobuf-dev \
+	libprotoc-dev \
+	protobuf-compiler \
+	libgstreamer1.0-dev \
+	libgstreamer-plugins-base1.0-dev \
+	gstreamer1.0-plugins-base \
+	gstreamer1.0-plugins-good \
+	gstreamer1.0-plugins-bad \
+	gstreamer1.0-plugins-ugly \
+	gstreamer1.0-libav \
+	libignition-cmake2-dev \
+	libignition-common3-dev \
+	libignition-msgs5-dev \
+	libignition-transport8-dev \
 	&& rm -rf /var/lib/apt/lists/*
 
 # Install X11 dependencies for GUI with Intel GPU support
@@ -77,6 +111,17 @@ ENV ALSA_DISABLE=1 \
 # Create non-root user
 RUN useradd -m ros -s /bin/bash \
 	&& echo "ros ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/ros
+
+# Clone and build PX4-Autopilot
+RUN git clone https://github.com/PX4/PX4-Autopilot.git /opt/PX4-Autopilot \
+	&& cd /opt/PX4-Autopilot \
+	&& git checkout v1.15.4 \
+	&& git submodule update --init --recursive
+
+# Build PX4 SITL with Gazebo
+RUN cd /opt/PX4-Autopilot \
+	&& DONT_RUN=1 make px4_sitl gazebo-classic \
+	&& chown -R ros:ros /opt/PX4-Autopilot
 
 # Create workspace mount point
 WORKDIR /work
