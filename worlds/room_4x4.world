@@ -1,0 +1,264 @@
+<?xml version="1.0"?>
+<sdf version="1.6">
+  <world name="room_4x4">
+
+    <include>
+      <uri>model://sun</uri>
+    </include>
+
+    <model name="floor">
+      <static>true</static>
+      <link name="floor_link">
+        <collision name="collision">
+          <geometry>
+            <box><size>4.1 4.1 0.1</size></box>
+          </geometry>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <box><size>4.1 4.1 0.1</size></box>
+          </geometry>
+	  <material>
+           <script>
+            <uri>file://media/materials/scripts/gazebo.material</uri>
+            <name>Gazebo/WoodFloor</name>
+           </script>
+          </material>
+        </visual>
+        <pose>0 0 0 0 0 0</pose>
+      </link>
+    </model>
+
+    <model name="north_wall_left">
+  <static>true</static>
+  <link name="wall_link">
+    <collision name="collision">
+      <geometry>
+        <box><size>1.55 0.1 1.9</size></box>
+      </geometry>
+    </collision>
+    <visual name="visual">
+      <geometry>
+        <box><size>1.55 0.1 1.9</size></box>
+      </geometry>
+      <material>
+       <script>
+        <uri>file://media/materials/scripts/gazebo.material</uri>
+        <name>Gazebo/White</name>
+       </script>
+      </material>
+    </visual>
+    <pose>-1.275 2 1 0 0 0</pose>
+  </link>
+</model>
+
+<model name="north_wall_right">
+  <static>true</static>
+  <link name="wall_link">
+    <collision name="collision">
+      <geometry>
+        <box><size>1.55 0.1 1.9</size></box>
+      </geometry>
+    </collision>
+    <visual name="visual">
+      <geometry>
+        <box><size>1.55 0.1 1.9</size></box>
+      </geometry>
+      <material>
+       <script>
+        <uri>file://media/materials/scripts/gazebo.material</uri>
+        <name>Gazebo/White</name>
+       </script>
+      </material>
+    </visual>
+    <pose>1.275 2 1 0 0 0</pose>
+  </link>
+</model>
+
+<model name="north_wall_top">
+  <static>true</static>
+  <link name="wall_link">
+    <collision name="collision">
+      <geometry>
+        <box><size>1 0.1 0.5</size></box>
+      </geometry>
+    </collision>
+    <visual name="visual">
+      <geometry>
+        <box><size>1 0.1 0.5</size></box>
+      </geometry>
+      <material>
+       <script>
+        <uri>file://media/materials/scripts/gazebo.material</uri>
+        <name>Gazebo/White</name>
+       </script>
+      </material>
+    </visual>
+    <pose>0 2 1.70 0 0 0</pose>
+  </link>
+</model>
+
+<model name="north_wall_bottom">
+  <static>true</static>
+  <link name="wall_link">
+    <collision name="collision">
+      <geometry>
+        <box><size>1 0.1 0.5</size></box>
+      </geometry>
+    </collision>
+    <visual name="visual">
+      <geometry>
+        <box><size>1 0.1 0.5</size></box>
+      </geometry>
+      <material>
+       <script>
+        <uri>file://media/materials/scripts/gazebo.material</uri>
+        <name>Gazebo/White</name>
+       </script>
+      </material>
+    </visual>
+    <pose>0 2 0.3 0 0 0</pose>
+  </link>
+</model>
+
+    <model name="south_wall">
+      <static>true</static>
+      <link name="wall_link">
+        <collision name="collision">
+          <geometry>
+            <box><size>4.1 0.1 1.9</size></box>
+          </geometry>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <box><size>4.1 0.1 1.9</size></box>
+           </geometry>
+           <material>
+            <script>
+             <uri>file://media/materials/scripts/gazebo.material</uri>
+             <name>Gazebo/White</name>
+            </script>
+           </material>
+        </visual>
+        <pose>0 -2 1 0 0 0</pose>
+      </link>
+    </model>
+
+    <model name="east_wall">
+      <static>true</static>
+      <link name="wall_link">
+        <collision name="collision">
+          <geometry>
+            <box><size>0.1 4 1.9</size></box>
+          </geometry>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <box><size>0.1 4 1.9</size></box>
+          </geometry>
+          <material>
+            <script>
+             <uri>file://media/materials/scripts/gazebo.material</uri>
+             <name>Gazebo/White</name>
+            </script>
+           </material>
+        </visual>
+        <pose>2 0 1 0 0 0</pose>
+      </link>
+    </model>
+
+    <model name="west_wall_left">
+  <static>true</static>
+  <link name="wall_link">
+    <collision name="collision">
+      <geometry>
+        <box><size>0.1 1.55 1.9</size></box>
+      </geometry>
+    </collision>
+    <visual name="visual">
+      <geometry>
+        <box><size>0.1 1.55 1.9</size></box>
+      </geometry>
+      <material>
+       <script>
+        <uri>file://media/materials/scripts/gazebo.material</uri>
+        <name>Gazebo/White</name>
+       </script>
+      </material>
+     </visual>
+    <pose>-2 -1.275 1 0 0 0</pose>
+  </link>
+</model>
+
+<model name="west_wall_right">
+  <static>true</static>
+  <link name="wall_link">
+    <collision name="collision">
+      <geometry>
+        <box><size>0.1 1.55 1.9</size></box>
+      </geometry>
+    </collision>
+    <visual name="visual">
+      <geometry>
+        <box><size>0.1 1.55 1.9</size></box>
+      </geometry>
+      <material>
+       <script>
+         <uri>file://media/materials/scripts/gazebo.material</uri>
+         <name>Gazebo/White</name>
+       </script>
+      </material>
+    </visual>
+    <pose>-2 1.275 1 0 0 0</pose>
+  </link>
+</model>
+
+<model name="west_wall_top">
+  <static>true</static>
+  <link name="wall_link">
+    <collision name="collision">
+      <geometry>
+        <box><size>0.1 1 0.5</size></box>
+      </geometry>
+    </collision>
+    <visual name="visual">
+      <geometry>
+        <box><size>0.1 1 0.5</size></box>
+      </geometry>
+      <material>
+       <script>
+        <uri>file://media/materials/scripts/gazebo.material</uri>
+        <name>Gazebo/White</name>
+       </script>
+      </material>
+    </visual>
+    <pose>-2 0 1.70 0 0 0</pose>
+  </link>
+</model>
+
+    <model name="ceiling">
+      <static>true</static>
+      <link name="ceiling_link">
+        <collision name="collision">
+          <geometry>
+            <box><size>4.1 4.1 0.1</size></box>
+          </geometry>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <box><size>4.1 4.1 0.1</size></box>
+          </geometry>
+	  <material>
+           <script>
+            <uri>file://media/materials/scripts/gazebo.material</uri>
+            <name>Gazebo/CeilingTiled</name>
+           </script>
+          </material>
+        </visual>
+        <pose>0 0 2 0 0 0</pose>
+      </link>
+    </model>
+
+  </world>
+</sdf>
+
